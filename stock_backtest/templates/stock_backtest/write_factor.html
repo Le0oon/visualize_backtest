@@ -12,9 +12,9 @@
         <label for="universe">选股范围:</label>
         <select id="universe" name="universe">
             <option value="all">全部A股(排除新股、ST)</option>
-            <option value="hs300">沪深300</option>
-            <option value="zz500">中证500</option>
-            <option value="zz1000">中证1000</option>
+            <option value="is_hs300">沪深300</option>
+            <option value="is_zz500">中证500</option>
+            <option value="is_zz1000">中证1000</option>
         </select>
 
         <br>
@@ -32,10 +32,13 @@
         <label for="return_type">收益率计算方式</label>
         <select id="return_type" name="return_type">
             <option value="raw_close_close">Raw Close to Close</option>
-            <option value="vwap_return">Vwap Return</option>
+            <option value="raw_close_vwap">Vwap Return</option>
             <option value="excess_return">Excess Return w.r.t. zz500</option>
         </select>
-
+        
+        <br>
+        <label for="turnover_fee"> 滑点和手续费 </label>
+        <input type="float" id="turnover_fee" name="turnover_fee" value="0.0005">
         <br>
 
         <br>
@@ -54,5 +57,49 @@
 
 </div>
 
+<div id="operator_dict">
+<table>
+    <thead>
+        <tr>
+            {% for col in func_columns %}
+            <th>{{ col }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in func_data %}
+        <tr>
+            {% for value in row %}
+            <td>{{ value }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</div>
+
+
+<div id="col_info_dict">
+    <table>
+        <thead>
+            <tr>
+                {% for col in col_columns %}
+                <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in col_data %}
+            <tr>
+                {% for value in row %}
+                <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+</div>
 {% endblock content %}
 
