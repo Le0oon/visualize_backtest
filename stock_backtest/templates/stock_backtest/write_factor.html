@@ -1,0 +1,58 @@
+{% extends "stock_backtest/base.html" %}
+
+{% block content %}
+
+
+<div id="write-factor-box">
+
+ 
+    <form name="factor_form" action="{% url 'stock_backtest:evaluating' %}" method="post" >
+        {% csrf_token %}
+        <h1> 回测参数设置 </h1>
+        <label for="universe">选股范围:</label>
+        <select id="universe" name="universe">
+            <option value="all">全部A股(排除新股、ST)</option>
+            <option value="hs300">沪深300</option>
+            <option value="zz500">中证500</option>
+            <option value="zz1000">中证1000</option>
+        </select>
+
+        <br>
+
+        <label for="start_date">开始日期:</label>
+        <input type="date" id="start_date" name="start_date" required value="2019-01-01">
+
+        <br>
+
+        <label for="end_date">结束日期:</label>
+        <input type="date" id="end_date" name="end_date" required value="2023-01-01">
+
+        <br>
+
+        <label for="return_type">收益率计算方式</label>
+        <select id="return_type" name="return_type">
+            <option value="raw_close_close">Raw Close to Close</option>
+            <option value="vwap_return">Vwap Return</option>
+            <option value="excess_return">Excess Return w.r.t. zz500</option>
+        </select>
+
+        <br>
+
+        <br>
+
+        <label for="factor_name">Factor Name:</label>
+        <input  type="text" id="factor_name" name="factor_name" default:"my_factor">
+        <br>
+
+        <label for="factor_expression">Additional Info:</label>
+        <input type="text" id="factor_expression" name="factor_expression">
+
+        <br>
+
+        <input type="submit" value="开始回测">
+    </form>
+
+</div>
+
+{% endblock content %}
+

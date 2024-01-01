@@ -1,0 +1,66 @@
+{% extends "stock_backtest/base.html" %}
+
+{% block content %}
+
+<div id="Login-box" >
+    <h1>使用股票回测系统</h1>
+      <div class="form">
+        <form name="Form" action="{% url 'stock_backtest:check_usr' %}"  method="post">
+            {% csrf_token %}
+          <div class="item">
+            <i class="fa" aria-hidden="true"></i>
+            <input type="text" placeholder="用户名" name="usr_name" />
+          </div>
+          <div class="item">
+            <i class="fa" aria-hidden="true"></i>
+            <input type="password" placeholder="密码" name="password" />
+          </div>
+          <button type="submit">登陆</button>
+        </form>
+      </div>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+
+#Login-box {
+  width: 25%;
+  height: auto;
+  margin: 0 auto;
+  margin-top: 15%;
+  text-align: center;
+  background-color: rgba(0,0,0,0.1);
+  border-radius:10px;
+  padding:30px;
+}
+
+#Login-box .form .item {
+  margin-top: 13px;
+}
+
+#Login-box .form .item i {
+  font-size: 16px;
+  color: #fff;
+}
+
+#Login-box .form .item input {
+  padding: 5px 10px;
+}
+
+#Login-box .form button {
+  margin-top: 15px;
+  width: 150px;
+  height: 30px;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: sans-serif;
+}
+
+
+
+
+
+</style>
+{% endblock content %}
+
