@@ -8,7 +8,7 @@ import json
 import os
 from django.conf import settings
 from .backtest import main
-from celery import shared_task
+# from celery import shared_task
 
 evaluation_complete = Signal()
 
@@ -111,7 +111,7 @@ def backtest(request):
 
 # from visualize_backtest
 
-@shared_task(name='async_evaluate_factor')
+# @shared_task(name='async_evaluate_factor')
 def async_evaluate_factor(start_dt, end_dt,universe,rtype,expression,turnover_fee,factor_name):
     
     main(start_dt,end_dt,
@@ -139,24 +139,23 @@ def evaluating(request):
         'factor_expression':factor_expression}
     ########
     print('start_evaluation...')
-    async_evaluate_factor.delay(start_date,end_date,
+    async_evaluate_factor(start_date,end_date,
                                  universe,return_type,factor_expression,
                                  turnover_fee,factor_name)
     ########
     print('end_evaluation')
     
 
-    return redirect('stock_backtest:pending_evaluation',
+    return redirect('stock_backtest:evaluation_result',
                     factor_name=factor_name,)
 
 import time
 
 def pending(request, factor_name):
-    
-    if request.method == 'POST':
-        print('pending...')
-        while not os.path.exists(f'./static/output/{factor_name}/ret_rst.csv'):
-            time.sleep(1)
+
+    print('pending...')
+    while not os.path.exists(f'./static/output/{factor_name}/ret_rst.csv'):
+        time.sleep(1)
     return redirect('stock_backtest:evaluation_result',factor_name=factor_name)
 
 def evaluation_result(request,factor_name):

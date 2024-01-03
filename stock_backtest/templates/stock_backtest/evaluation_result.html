@@ -7,7 +7,7 @@
 <br>
 <br>
 
-<title>回测报告</title>
+<title>回测报告 {{factor_name}}</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -28,33 +28,42 @@
       display: flex;
       flex-wrap: wrap;
       gap: 20px;
+      padding-left: 5%;
+      padding-right: 5%;
     }
 
     .chart {
-        width: 45%; /* Adjust as needed */
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-        overflow: hidden; /* 确保图片不溢出容器 */
-        position: relative; /* 用于设置图表容器的宽高比例 */
+      align-items: center;
+      width: 48%; /* Adjust as needed */
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      overflow: hidden; /* 确保图片不溢出容器 */
+      position: relative; /* 用于设置图表容器的宽高比例 */
     }
 
-    
-    .aspect-ratio {
-        position: relative;
-        width: 100%;
-        padding-top: 62.5%; 
+    .big-chart {
+      width: 60%;
+      position: relative;
+      padding-left: 20%;
+      padding-right: 20%;
     }
+    .aspect-ratio {
+      position: relative;
+      width: 100%;
+      padding-top: 75%;
+    }
+
     .chart img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+      
     .ic-layer-chart {
         width: 90%; /* 设置图表容器的宽度 */
-        border: 1px solid #ccc;
-        box-sizing: border-box;
-        overflow: hidden;
-        position: relative;
+        padding-left: 5%;
+        padding-right: 5%;
+
         {% comment %} padding-top: 29.41%; /* 5/17 = 0.2941; 17:5的比例 */ {% endcomment %}
     }
 
@@ -87,7 +96,7 @@
   <!-- 因子信息 -->
   <div class="section">
 
-    <div class="section-title">1. 因子信息</div>
+    <h2>1. 因子信息</h2>
     <div class="chart-container">
       <div class="chart">
         <!-- 因子histogram -->
@@ -115,9 +124,9 @@
 
   <!-- IC分析 -->
   <div class="section">
-    <div class="section-title">2. IC分析</div>
+    <h2>2. IC分析</h2>
 
-        <div class="table-container">
+        <div class="chart-container">
             <table>
               <thead>
                 <tr>
@@ -143,23 +152,22 @@
       <div class="ic-layer-chart">
         <!-- IC分层图 -->
         <img src="{% static ic_layer_path %}" alt="IC Layer Plot">
-        <p>IC 分层图</p>
       </div>
     </div>
     <div class="chart-container">
 
-      <div class="chart">
+      <div class="big-chart">
         <!-- 累积IC图 -->
         <img src="{%static cum_ic_path %}" alt="Cumulative IC Plot">
-        <p>累积IC 图</p>
+        
       </div>
     </div>
   </div>
 
   <!-- 收益率分析 -->
   <div class="section">
-    <div class="section-title">3. 收益率分析</div>
-    <div class="table-container">
+    <h2>3. 收益率分析</h2>
+    <div class="chart-container">
         <table>
           <thead>
             <tr>
@@ -182,10 +190,10 @@
       </div>
 </div>
     <div class="chart-container">
-      <div align="center" class="chart">
+      <div class="big-chart">
         <!-- 累积收益率图 -->
         <img src="{%static cum_ret_path %}" alt="Cumulative Return Plot">
-        <p>累积收益率图</p>
+  
       </div>
     </div>
   </div>
