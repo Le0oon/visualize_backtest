@@ -1,12 +1,16 @@
 from django.http import HttpResponse
 from django.shortcuts import render,redirect
 from django_pandas.io import read_frame
-
 from django.contrib import messages
+from django.dispatch import Signal
 import pandas as pd
-
 import json
+import os
+from django.conf import settings
+from .backtest import main
+from celery import shared_task
 
+evaluation_complete = Signal()
 
 
 
@@ -24,17 +28,11 @@ funcs_df = pd.DataFrame({
     'ts_diff': {'type': '时序单列操作符', 'description': '计算时序数据的差分'},
     'ts_median_abs_deviation': {'type': '时序单列操作符', 'description': '计算时序数据的中位数绝对偏差'},
     'ts_rms': {'type': '时序单列操作符', 'description': '计算时序数据的均方根'},
-    'ts_norm_mean': {'type': '时序单列操作符', 'description': '计算时序数据的均值归一化'},
-    'ts_norm_min': {'type': '时序单列操作符', 'description': '计算时序数据的最小值归一化'},
-    'ts_norm_max': {'type': '时序单列操作符', 'description': '计算时序数据的最大值归一化'},
-    'ts_norm_min_max': {'type': '时序单列操作符', 'description': '计算时序数据的最小-最大值归一化'},
     'ts_ratio_beyond_3sigma': {'type': '时序单列操作符', 'description': '计算时序数据超过3倍标准差的比例'},
     'ts_ratio_beyond_2sigma': {'type': '时序单列操作符', 'description': '计算时序数据超过2倍标准差的比例'},
     'ts_index_mass_median': {'type': '时序单列操作符', 'description': '计算时序数据的中位数指标质量'},
     'ts_number_cross_mean': {'type': '时序单列操作符', 'description': '计算时序数据与均值交叉的次数'},
     'ts_time_asymmetry_stats': {'type': '时序单列操作符', 'description': '计算时序数据的时间不对称性统计量'},
-    'ts_longest_strike_above_mean': {'type': '时序单列操作符', 'description': '计算时序数据超过均值的最长连续长度'},
-    'ts_longest_strike_below_mean': {'type': '时序单列操作符', 'description': '计算时序数据低于均值的最长连续长度'},
     'ts_mean_over_1norm': {'type': '时序单列操作符', 'description': '计算时序数据的均值除以1范数'},
     'ts_norm': {'type': '时序单列操作符', 'description': '计算时序数据的归一化'},
 
@@ -47,10 +45,8 @@ funcs_df = pd.DataFrame({
     'comb_sub': {'type': '双列操作符', 'description': '两个因子相减'},
     'comb_mul': {'type': '双列操作符', 'description': '两个因子相乘'},
     'comb_div': {'type': '双列操作符', 'description': '两个因子相除'},
-    'ts_corr_10D': {'type': '双列操作符', 'description': '计算两个因子的10天相关系数'},
     'ts_corr_20D': {'type': '双列操作符', 'description': '计算两个因子的20天相关系数'},
-    'ts_corr_40D': {'type': '双列操作符', 'description': '计算两个因子的40天相关系数'},
-}).T.reset_index()
+    }).T.reset_index()
 funcs_df.columns = ['操作符名称','操作符种类', '操作符描述']
 
 column_info = pd.DataFrame({
@@ -112,6 +108,20 @@ def write_factor(request):
 def backtest(request):
     return render(request,'stock_backtest/backtest.html')
 
+
+# from visualize_backtest
+
+@shared_task(name='async_evaluate_factor')
+def async_evaluate_factor(start_dt, end_dt,universe,rtype,expression,turnover_fee,factor_name):
+    
+    main(start_dt,end_dt,
+        universe=universe,
+        rtype=rtype,
+        expression=expression,
+        turnover_fee=turnover_fee,
+        factor_name=factor_name
+        )
+
 def evaluating(request):
     factor_name = request.POST.get('factor_name')
     universe = request.POST.get('universe')
@@ -119,6 +129,7 @@ def evaluating(request):
     start_date = request.POST.get('start_date')
     end_date = request.POST.get('end_date')
     factor_expression = request.POST.get('factor_expression')
+    turnover_fee = float(request.POST.get('turnover_fee'))
     params = {
         'factor_name':factor_name,
         'universe':universe,
@@ -127,12 +138,26 @@ def evaluating(request):
         'end_date':end_date,
         'factor_expression':factor_expression}
     ########
-    # TODO: 在这里调用 Backtest Frame, 然后画图存到本地
+    print('start_evaluation...')
+    async_evaluate_factor.delay(start_date,end_date,
+                                 universe,return_type,factor_expression,
+                                 turnover_fee,factor_name)
     ########
+    print('end_evaluation')
     
-    return redirect('stock_backtest:evaluation_result',
+
+    return redirect('stock_backtest:pending_evaluation',
                     factor_name=factor_name,)
 
+import time
+
+def pending(request, factor_name):
+    
+    if request.method == 'POST':
+        print('pending...')
+        while not os.path.exists(f'./static/output/{factor_name}/ret_rst.csv'):
+            time.sleep(1)
+    return redirect('stock_backtest:evaluation_result',factor_name=factor_name)
 
 def evaluation_result(request,factor_name):
 
@@ -140,11 +165,31 @@ def evaluation_result(request,factor_name):
     # TODO: 等待 Backtest Frame 的输出, listen to the output
     ########
     
-    
+        
     # 这个最后要注释掉
-    return HttpResponse(factor_name)
+    # return HttpResponse(factor_name)
 
     # 读取 factor_name 对应的文件, 画图
-    context = {}
+    ic_rst = pd.read_csv(f'./static/output/{factor_name}/ic_rst.csv').rename(columns={'Unnamed: 0':'时间'})
+    ic_rst[ic_rst.columns[1:]] = ic_rst[ic_rst.columns[1:]].round(3)
+    ret_rst = pd.read_csv(f'./static/output/{factor_name}/ret_rst.csv').rename(columns={'Unnamed: 0':'时间'})
+    ret_rst[ret_rst.columns[1:]] = ret_rst[ret_rst.columns[1:]].round(3)
+    ret_rst.dropna(inplace=True,axis=1)
+    context = {
+        'factor_name': factor_name,
+        'hist_path': f'output/{factor_name}/FactorHistogram.png',
+        'quantile_path': f'output/{factor_name}/QuantilePlot.png',
+        'auto_corr_path': f'output/{factor_name}/FactorAutoCorr.png',
+        'count_path': f'output/{factor_name}/FactorStockCount.png',
+        'ic_layer_path': f'output/{factor_name}/LayeredReturn.png',
+        'cum_ic_path': f'output/{factor_name}/CumulativeIC.png',
+        'cum_ret_path': f'output/{factor_name}/LongShortReturn.png',
+        'ic_cols':ic_rst.columns.tolist(),
+        'ic_data':ic_rst.values,
+        'ret_cols':ret_rst.columns.tolist(),
+        'ret_data':ret_rst.values,
+        
+        
+    }
     # TODO: 需要实现 evaluation_result.html 的内容, 把context里的数据展示到前端
     return render(request,'stock_backtest/evaluation_result.html',context)

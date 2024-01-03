@@ -3,6 +3,7 @@
 {% block content %}
 
 <div id="Login-box" >
+  <title>登陆StockBacktest</title>
     <h1>使用股票回测系统</h1>
       <div class="form">
         <form name="Form" action="{% url 'stock_backtest:check_usr' %}"  method="post">
@@ -17,7 +18,7 @@
           </div>
           <button type="submit">登陆</button>
         </form>
-      </div>
+</div>
 <style>
 * {
   margin: 0;
