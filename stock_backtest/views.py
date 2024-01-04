@@ -100,7 +100,7 @@ def write_factor(request):
         'func_columns': funcs_df.columns.tolist(),
         'col_data': column_info.values,
         'col_columns': column_info.columns.tolist(),
-        
+        'factor_list': get_factor_list(),
         }
     return render(request,'stock_backtest/write_factor.html',context)
 
@@ -109,6 +109,10 @@ def backtest(request):
     return render(request,'stock_backtest/backtest.html')
 
 
+def get_factor_list():
+    factor_list = os.listdir('./static/output')
+    
+    return factor_list
 # from visualize_backtest
 
 # @shared_task(name='async_evaluate_factor')
@@ -130,33 +134,38 @@ def evaluating(request):
     end_date = request.POST.get('end_date')
     factor_expression = request.POST.get('factor_expression')
     turnover_fee = float(request.POST.get('turnover_fee'))
-    params = {
-        'factor_name':factor_name,
-        'universe':universe,
-        'return_type':return_type,
-        'start_date':start_date,
-        'end_date':end_date,
-        'factor_expression':factor_expression}
+    
     ########
     print('start_evaluation...')
-    async_evaluate_factor(start_date,end_date,
-                                 universe,return_type,factor_expression,
-                                 turnover_fee,factor_name)
+    try:
+        async_evaluate_factor(start_date, end_date,
+                          universe, return_type, factor_expression,
+                          turnover_fee, factor_name)
+    except Exception as e:
+        error_message = str(e)
+
+        redirect('stock_backtest:write_factor',{'error_message':error_message})
+        
+    params = {
+        'factor_name': factor_name,
+        'universe': universe,
+        'return_type': return_type,
+        'start_date': start_date,
+        'end_date': end_date,
+        'factor_expression': factor_expression
+    }
+    
+    # Save params to JSON file
+    with open(f'./static/output/{factor_name}/params.json', 'w') as file:
+        json.dump(params, file)
     ########
     print('end_evaluation')
     
-
     return redirect('stock_backtest:evaluation_result',
                     factor_name=factor_name,)
 
-import time
-
-def pending(request, factor_name):
-
-    print('pending...')
-    while not os.path.exists(f'./static/output/{factor_name}/ret_rst.csv'):
-        time.sleep(1)
-    return redirect('stock_backtest:evaluation_result',factor_name=factor_name)
+def info(request):
+    return HttpResponse('Author: qzliu;    Email: liuqize19@gmail.com, liuqz23@mails.tsinghua.edu.cn;')
 
 def evaluation_result(request,factor_name):
 
@@ -174,8 +183,20 @@ def evaluation_result(request,factor_name):
     ret_rst = pd.read_csv(f'./static/output/{factor_name}/ret_rst.csv').rename(columns={'Unnamed: 0':'时间'})
     ret_rst[ret_rst.columns[1:]] = ret_rst[ret_rst.columns[1:]].round(3)
     ret_rst.dropna(inplace=True,axis=1)
+    try:
+        with open(f'./static/output/{factor_name}/params.json', 'r') as file:
+            params = json.load(file)
+    except:
+        print('params.json not found')
+        params = {
+            'factor_name': factor_name,
+            'universe': 'Unknown',
+            'return_type': 'Unknown',
+            'start_date': 'Unknown',
+            'end_date': 'Unknown',
+            'factor_expression': 'Unknown'
+        }
     context = {
-        'factor_name': factor_name,
         'hist_path': f'output/{factor_name}/FactorHistogram.png',
         'quantile_path': f'output/{factor_name}/QuantilePlot.png',
         'auto_corr_path': f'output/{factor_name}/FactorAutoCorr.png',
@@ -187,8 +208,9 @@ def evaluation_result(request,factor_name):
         'ic_data':ic_rst.values,
         'ret_cols':ret_rst.columns.tolist(),
         'ret_data':ret_rst.values,
-        
-        
+        'factor_list': get_factor_list(),
     }
+    context = {**context, **params}
+    print(context)
     # TODO: 需要实现 evaluation_result.html 的内容, 把context里的数据展示到前端
     return render(request,'stock_backtest/evaluation_result.html',context)

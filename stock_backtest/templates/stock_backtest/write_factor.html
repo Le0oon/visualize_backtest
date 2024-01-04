@@ -38,11 +38,69 @@
       th {
         background-color: #f2f2f2;
       }
+
+.sidenav {
+    width: 270px;
+    position: fixed;
+    z-index: 1;
+    top: 10%;
+    left: 10px;
+    background:rgba(0,0,0,0.1);
+    border-radius:10px;
+    overflow-x: hidden;
+    padding: 8px 0;
+  }
+  
+  .sidenav a {
+    padding: 6px 16px 6px 32px;
+    text-decoration: none;
+    font-size: 12px;
+  
+    display: block;
+  }
+  .sidenav p {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 18px;
+  
+    display: block;
+  }
+  
+  .section {
+    margin-left: 280px; 
+    font-size: 18px; 
+    padding: 0px 10px;
+  }
+  
+  @media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+  }
+
 </style>
 <br>
 <br>
 <br>
 <br>
+<script>
+    function showErrorPopup(errorMessage) {
+        alert('Error: ' + errorMessage);
+    }
+    {% if error_message %}
+        showErrorPopup("{{ error_message|escapejs }}");
+    {% endif %}
+</script>
+
+
+<div class="sidenav">
+    <p>已计算完毕的因子</p>
+
+      {% for factor in factor_list %}
+          <a href="/evaluation_result/{{ factor }}">{{ factor }}</a>
+      {% endfor %}
+
+  </div>
+
 <div id="write-factor-box">
     <title>股票回测系统</title>
     <form name="factor_form" action="{% url 'stock_backtest:evaluating' %}" method="post">
@@ -94,7 +152,7 @@
             </tr>
             <tr>
                 <td> </td>
-                <td><textarea id="factor_expression" name="factor_expression" rows="5" maxlength="50">ts_mean(raw_close_close)</textarea></td>
+                <td><textarea id="factor_expression" name="factor_expression" rows="5" maxlength="1000">ts_mean(raw_close_close,20)</textarea></td>
             </tr>
         </table>
 
@@ -106,11 +164,14 @@
 
 <br>
 <br>
+<div class="section">
 <div style="margin:3%">
 <h1 align="center">因子表达式参考</h1>
+<br>
+<br>
 <div id="operator_dict" style="float: left; width: calc(45% - 3px);">
     <table>
-        <h2 align="center">操作符表</h2>
+        <h2>操作符表</h2>
         <thead>
             <tr>
                 {% for col in func_columns %}
@@ -132,7 +193,7 @@
 
 <div id="col_info_dict" style="float: right; width: calc(45% - 3px);">
     <table id="expression">
-        <h2 align="center">数据表</h2>
+        <h2>数据表</h2>
         <thead>
             <tr>
                 {% for col in col_columns %}
@@ -150,6 +211,7 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
 </div>
 </div>
 {% endblock content %}

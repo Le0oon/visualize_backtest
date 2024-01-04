@@ -14,10 +14,6 @@
       margin: 20px;
     }
 
-    .section {
-      margin-bottom: 30px;
-    }
-
     .section-title {
       font-size: 18px;
       font-weight: bold;
@@ -37,8 +33,8 @@
       width: 48%; /* Adjust as needed */
       border: 1px solid #ccc;
       box-sizing: border-box;
-      overflow: hidden; /* 确保图片不溢出容器 */
-      position: relative; /* 用于设置图表容器的宽高比例 */
+      overflow: hidden; 
+      position: relative; 
     }
 
     .big-chart {
@@ -85,14 +81,88 @@
       }
   
       th {
-        background-color: #f2f2f2;
+        background-color:rgba(0,0,0,0.1);
       }
   
+.sidenav {
+  width: 270px;
+  position: fixed;
+  z-index: 1;
+  top: 10%;
+  left: 10px;
+  background:rgba(0,0,0,0.1);
+  border-radius:10px;
+  overflow-x: hidden;
+  padding: 8px 0;
+}
+
+
+.sidenav a {
+  padding: 6px 16px 6px 32px;
+  text-decoration: none;
+  font-size: 12px;
+
+  display: block;
+}
+.sidenav p {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 18px;
+
+  display: block;
+}
+
+.section {
+  margin-left: 280px; 
+  font-size: 18px; 
+  padding: 0px 10px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
     
   </style>
 </head>
+
+<div class="sidenav">
+  <p>因子列表</p>
+
+    {% for factor in factor_list %}
+        <a href="/evaluation_result/{{ factor }}">{{ factor }}</a>
+
+    {% endfor %}
+
+</div>
+
 <body>
 <h1 align="center">因子分析报告: {{ factor_name }}</h1>
+  <div class="section">
+    <div class="chart-container">
+      <table>
+        <thead>
+          <tr>
+            <td>开始日期</td>
+            <td>结束日期</td>
+            <td>股票池</td>
+            <td>收益类型</td>
+            <td>因子表达式</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ start_date }}</td>
+            <td>{{ end_date }}</td>
+            <td>{{ universe }}</td>
+            <td>{{ return_type }}</td>
+            <td>{{ factor_expression }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <br>
   <!-- 因子信息 -->
   <div class="section">
 
@@ -162,6 +232,7 @@
         
       </div>
     </div>
+
   </div>
 
   <!-- 收益率分析 -->
@@ -193,7 +264,6 @@
       <div class="big-chart">
         <!-- 累积收益率图 -->
         <img src="{%static cum_ret_path %}" alt="Cumulative Return Plot">
-  
       </div>
     </div>
   </div>

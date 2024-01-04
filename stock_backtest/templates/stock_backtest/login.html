@@ -3,27 +3,38 @@
 {% block content %}
 
 <div id="Login-box" >
-  <title>登陆StockBacktest</title>
-    <h1>使用股票回测系统</h1>
+  <title>StockBacktest: 登陆</title>
+    <h1>Mannual Alpha Backtest</h1>
       <div class="form">
         <form name="Form" action="{% url 'stock_backtest:check_usr' %}"  method="post">
-            {% csrf_token %}
-          <div class="item">
-            <i class="fa" aria-hidden="true"></i>
-            <input type="text" placeholder="用户名" name="usr_name" />
-          </div>
-          <div class="item">
-            <i class="fa" aria-hidden="true"></i>
-            <input type="password" placeholder="密码" name="password" />
-          </div>
-          <button type="submit">登陆</button>
+          {% csrf_token %}
+          <table align="center">
+            <tr>
+              <td>
+                <div class="item">
+                  <i class="fa" aria-hidden="true"></i>
+                  <input type="text" placeholder="用户名" name="usr_name" />
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div class="item">
+                  <i class="fa" aria-hidden="true"></i>
+                  <input type="password" placeholder="密码" name="password" />
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <button type="submit">登陆</button>
+              </td>
+            </tr>
+          </table>
         </form>
 </div>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-}
+
 
 #Login-box {
   width: 25%;

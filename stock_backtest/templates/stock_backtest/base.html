@@ -1,13 +1,14 @@
 <p class="topbar">
-  <a href="http://127.0.0.1:8000/admin/" class="button">Admin</a>
+  <a href="/" class="button">重新登陆</a>
+  <a href="/write_factor/" class="button">写个因子吧</a>
+  <a href="/admin/" class="button">Admin</a>
+  <a href="/info/" class="button">info</a>
 </p>
 <style>
 .topbar{
   position: absolute;
-  left: 90%;
-  width:30px;
-  height:10px;
-  top:20px;
+  left: 75%;
+
 }
 .button {
   top:15px;
@@ -20,5 +21,6 @@
 </style>
 
 
-{% block content %}{% endblock content%}
+{% block content %}
+{% endblock content%}
 
