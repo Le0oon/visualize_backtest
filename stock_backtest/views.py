@@ -128,6 +128,7 @@ def async_evaluate_factor(start_dt, end_dt,universe,rtype,expression,turnover_fe
 
 def evaluating(request):
     factor_name = request.POST.get('factor_name')
+    factor_name = factor_name.replace(' ','_')
     universe = request.POST.get('universe')
     return_type = request.POST.get('return_type')
     start_date = request.POST.get('start_date')
@@ -142,9 +143,10 @@ def evaluating(request):
                           universe, return_type, factor_expression,
                           turnover_fee, factor_name)
     except Exception as e:
+        print('error occured')
         error_message = str(e)
 
-        redirect('stock_backtest:write_factor',{'error_message':error_message})
+        return redirect('stock_backtest:write_factor')
         
     params = {
         'factor_name': factor_name,

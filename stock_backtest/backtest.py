@@ -47,9 +47,16 @@ def calculate_input_expression(expression:str, df:pd.DataFrame):
     
     return df[['TradingDay','SecuCode',factor_col]].dropna(), factor_col
 
-def main(start_dt,end_dt,universe,rtype,expression,turnover_fee=0.0005,factor_name=None):
+def main(start_dt,end_dt,universe,rtype,expression,turnover_fee=0.0005,factor_name:str=None):
     # print(start_dt,end_dt)
-    save_dir = os.path.join('./static/output',factor_name)
+    # 小数据测试
+    print('testing factor: ',expression)
+    calculate_input_expression(expression,pd.read_feather('./data/test_data.feather'))
+    print('complete testing.')
+    
+    if factor_name is not None:
+        
+        save_dir = os.path.join('./static/output',factor_name)
     if os.path.exists(save_dir):
         # 如果已经存在因子，则删除之
         shutil.rmtree(save_dir)
